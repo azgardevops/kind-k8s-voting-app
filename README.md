@@ -14,7 +14,7 @@ This guide covers the steps to:
 - Install and access kubectl.
 - Set up the Kubernetes Dashboard.
 
-![Uploading image.png…]()
+
 
 
 ## Architecture
