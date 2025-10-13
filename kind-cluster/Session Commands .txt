@@ -1,0 +1,81 @@
+
+kubectl create namespace monitor
+
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+$ chmod 700 get_helm.sh
+$ ./get_helm.sh
+
+https://github.com/prometheus-community/helm-charts/blob/main/README.md
+
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+
+helm install prometheus-stack prometheus-community/kube-prometheus-stack \
+  --namespace monitor \
+  --set prometheus.service.nodePort=30000 \
+  --set grafana.service.nodePort=31000 \
+  --set grafana.service.type=NodePort \
+  --set prometheus.service.type=NodePort
+  
+  ( prometheus-stack → Release name
+			prometheus-community/kube-prometheus-stack → Helm chart being installed
+			--namespace monitoring → Installs into the “monitoring” namespace
+			--set ... → Overrides default Helm values:
+			Exposes Prometheus on port 30000
+			Exposes Grafana on port 31000
+			Both services are of type NodePort)
+  -----------------------------------------------------------------------------------
+ root@ip-172-31-20-192:/home/ubuntu/cluster# helm install prometheus-stack prometheus-community/kube-prometheus-stack \
+  --namespace monitor \
+  --set prometheus.service.nodePort=30000 \
+  --set grafana.service.nodePort=31000 \
+  --set grafana.service.type=NodePort \
+  --set prometheus.service.type=NodePort
+			NAME: prometheus-stack
+			LAST DEPLOYED: Wed Oct  8 07:50:46 2025
+			NAMESPACE: monitor
+			STATUS: deployed
+			REVISION: 1
+			NOTES:
+			kube-prometheus-stack has been installed. Check its status by running:
+			  kubectl --namespace monitor get pods -l "release=prometheus-stack"
+
+			Get Grafana 'admin' user password by running:
+
+			  kubectl --namespace monitor get secrets prometheus-stack-grafana -o jsonpath="{.data.admin-password}" | base64 -d ; echo
+
+			Access Grafana local instance:
+
+			  export POD_NAME=$(kubectl --namespace monitor get pod -l "app.kubernetes.io/name=grafana,app.kubernetes.io/instance=prometheus-stack" -oname)
+			  kubectl --namespace monitor port-forward $POD_NAME 3000
+
+			Visit https://github.com/prometheus-operator/kube-prometheus for instructions on how to create & configure Alertmanager and Prometheus instances using the Operator.
+ 
+
+
+root@ip-172-31-20-192:/home/ubuntu# kubectl get svc -n monitor
+		NAME                                        TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)
+		alertmanager-operated                       ClusterIP   None            <none>        9093/TCP,9094/TC
+		prometheus-operated                         ClusterIP   None            <none>        9090/TCP
+		prometheus-stack-grafana                    NodePort    10.96.82.247    <none>        80:31000/TCP
+		prometheus-stack-kube-prom-alertmanager     ClusterIP   10.96.201.116   <none>        9093/TCP,8080/TC
+		prometheus-stack-kube-prom-operator         ClusterIP   10.96.151.201   <none>        443/TCP
+		prometheus-stack-kube-prom-prometheus       NodePort    10.96.229.29    <none>        9090:30000/TCP,8
+		prometheus-stack-kube-state-metrics         ClusterIP   10.96.152.185   <none>        8080/TCP
+		prometheus-stack-prometheus-node-exporter   ClusterIP   10.96.38.102    <none>        9100/TCP
+
+ 
+
+
+
+
+
+
+
+helm uninstall prometheus-stack -n monitor
+
+
+  
+ kubectl get secret --namespace monitor prometheus-stack-grafana -o jsonpath="{.data.admin-password}" | base64 --decode; echo
+
+  
+ 
